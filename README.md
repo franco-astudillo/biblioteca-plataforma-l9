@@ -20,8 +20,7 @@ Levanta el sistema entero —Postgres, RabbitMQ en clúster, y los siete servici
 
 Los ocho repositorios van **uno al lado del otro**, en la misma carpeta, con el nombre **sin** el sufijo `-l9`
 (el `compose.yml` busca `../biblioteca-<pieza>`). La lista con los enlaces está en `docs/repositorios.md`. Tras hacer
-Fork de cada uno, y parado en la carpeta donde quieras tenerlos, los mismos comandos sirven en Windows
-(PowerShell), macOS y Linux:
+Fork de cada uno, abre Git Bash en Windows (bash en macOS y Linux) y ejecuta:
 
 ```bash
 cd $HOME/DSY1107
@@ -45,11 +44,41 @@ rellénalo (Windows: `Copy-Item .env.example .env`; macOS y Linux: `cp .env.exam
 Después, desde `biblioteca-plataforma`:
 
 ```bash
-docker compose up -d --build --wait
+bash levantar.sh
 ```
 
 Termina cuando todos los servicios están `healthy` (o arriba, los que no tienen comprobación de salud).
 `docker compose ps` los lista. Para bajarlo sin borrar los datos: `docker compose down`.
+
+`levantar.sh` crea los seis `.env` que falten y se detiene indicando los valores vacios o de ejemplo
+(`XXXXXXXX` / `PENDIENTE`). Los datos publicos del user pool estan en `docs/cognito.md`. Las contrasenas de
+Postgres/RabbitMQ se configuran localmente; con volumenes anteriores deben coincidir con las originales.
+Ningun `.env` se sube a Git. Para la primera prueba sin Kafka, usa una rama de L8; en L9 los topics se crean
+antes de arrancar el consumidor y por eso el comando de arranque es `bash levantar.sh`.
+
+## Kafka (L9)
+
+Se agregan tres controllers KRaft (ids 1, 2 y 3), tres brokers (4, 5 y 6) y Kafka UI:
+
+| Acceso | Direccion |
+|---|---|
+| Kafka UI | `http://localhost:8085` |
+| Kafka desde el equipo / simulador | `localhost:9092,localhost:9094,localhost:9096` |
+| Kafka desde contenedores | `broker-1:19092,broker-2:19092,broker-3:19092` |
+
+`kafka/topics.sh` crea `biblioteca.prestamos`, `biblioteca.lecturas` y sus `.dlt`: tres particiones,
+replicacion 3, `min.insync.replicas=2`, retencion de siete dias (24 horas para lecturas). Se puede repetir sin
+duplicar topics. El productor vive en `biblioteca-prestamos/src/kafka`; publica despues de guardar en Postgres
+y conserva RabbitMQ. El grupo `biblioteca-panel` del worker valida los dos topics y hace commit despues de
+registrar cada evento, incluidos los invalidos. En E1 los invalidos se registran y confirman; las DLT se usan
+en una entrega posterior. Si Kafka falla despues del guardado, se registra el error: E1 no implementa outbox.
+
+Para reproducir la noche, clona `https://github.com/Umbingelelo/biblioteca-simulador.git` al lado de los ocho
+repositorios, entra en esa carpeta y ejecuta `npm ci` y `node reproducir.mjs --velocidad 60`. Una ejecucion
+agrega 3.388 mensajes; repetirla agrega otra copia de los datos.
+
+Pruebas del codigo: `npm test` y `npm run build` en prestamos y eventos. La red planificada y sus mediciones
+se documentan en `docs/red.md`; las verificaciones de nube estan en `deploy/aws/` y `deploy/azure/`.
 
 Si cambias un repositorio y quieres reconstruir solo ese servicio: `docker compose up -d --build <servicio>`
 (`gateway`, `bff`, `prestamos`, ...).
