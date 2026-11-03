@@ -1,0 +1,7 @@
+verificar-permisos.sh · EP3 DSY1107
+Inicio: 2026-11-03T00:33:33Z · región us-east-1
+FALLA   0 credenciales ::  aws: [ERROR]: An error occurred (ExpiredToken) when calling the GetCallerIdentity operation: The security token included in the request is expired 
+        Copia de nuevo las credenciales de AWS Details: cambian en cada sesión.
+
+Limpieza de los recursos de prueba
+Fin: 2026-11-03T00:33:35Z

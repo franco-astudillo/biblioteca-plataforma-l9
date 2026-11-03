@@ -1,0 +1,11 @@
+ESTADO: PENDIENTE DE VERIFICACION REAL
+Fecha local: 2026-11-02 (America/Santiago)
+Azure CLI no estaba instalada ni disponible en PATH al iniciar la actividad.
+No se confirmo una sesion ni una suscripcion Azure for Students.
+No se crearon recursos Azure ni un presupuesto.
+Region candidata de la guia: northcentralus; aun NO validada en esta suscripcion.
+Standard_B2ats_v2: pendiente de consultar restricciones.
+Standard_B2als_v2: pendiente de consultar restricciones.
+Total Regional vCPUs: pendiente de consultar.
+Presupuesto y alerta: pendiente de definir con el titular de la cuenta y verificar.
+Ejecutar: REGION=northcentralus bash deploy/azure/verificar-region.sh
