@@ -80,6 +80,11 @@ agrega 3.388 mensajes; repetirla agrega otra copia de los datos.
 Pruebas del codigo: `npm test` y `npm run build` en prestamos y eventos. La red planificada y sus mediciones
 se documentan en `docs/red.md`; las verificaciones de nube estan en `deploy/aws/` y `deploy/azure/`.
 
+Si no tienes `az` instalado, `bash deploy/azure/cli.sh az version` usa la imagen oficial de Microsoft en
+Docker. El login se inicia con `bash deploy/azure/cli.sh az login --use-device-code`; la sesion se guarda
+en `.azure-local/`, excluida de Git. Con una cuenta Azure disponible:
+`REGION=northcentralus bash deploy/azure/cli.sh bash deploy/azure/verificar-region.sh`.
+
 Si cambias un repositorio y quieres reconstruir solo ese servicio: `docker compose up -d --build <servicio>`
 (`gateway`, `bff`, `prestamos`, ...).
 
