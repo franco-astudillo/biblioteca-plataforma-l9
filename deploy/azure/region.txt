@@ -1,0 +1,12 @@
+ESTADO: PENDIENTE - SIN CUENTA AZURE
+Fecha local: 2026-11-02 (America/Santiago)
+El estudiante confirmo que actualmente no tiene cuenta Azure.
+Se preparo Azure CLI mediante la imagen oficial mcr.microsoft.com/azure-cli:azurelinux3.0.
+El login por dispositivo se cancelo sin autenticar una cuenta.
+No se crearon recursos Azure ni un presupuesto.
+Region candidata de la guia: northcentralus; NO validada en una suscripcion.
+Standard_B2ats_v2: pendiente de consultar restricciones.
+Standard_B2als_v2: pendiente de consultar restricciones.
+Total Regional vCPUs: pendiente de consultar.
+Presupuesto y alerta: pendientes de cuenta y definicion por el titular.
+Cuando tenga cuenta: REGION=northcentralus bash deploy/azure/verificar-region.sh
