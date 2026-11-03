@@ -14,14 +14,14 @@ noviembre de 2026, America/Santiago. Los valores de nube pendientes se identific
 
 | Maquina | Subred | IP privada | Tamano | Lo que corre | Por que ese tamano |
 |---|---|---|---|---|---|
-| `gw-aws` | publica | 10.0.1.20, Elastic IP pendiente E2 | t3.small | Caddy HTTPS y `biblioteca-gateway` | Gateway midio 43,58 MiB. 2 GiB propuestos, con margen para Caddy, SO y picos; falta probar carga. |
+| `gw-aws` | publica | 10.0.1.20, Elastic IP pendiente E2 | t3.small | Caddy HTTPS y `biblioteca-gateway` | Gateway midio 43,07 MiB. 2 GiB propuestos, con margen para Caddy, SO y picos; falta probar carga. |
 | `nat` | publica | 10.0.1.10 | t3.nano | NAT instance | 0,5 GiB propuestos por su rol de reenvio, sin contenedores; verificar trafico. Requiere desactivar source/dest check. |
-| `servicios` | aplicacion | 10.0.11.10 | t3.medium | `biblioteca-libros`, `biblioteca-prestamos`, `biblioteca-eventos` | Libros midio 19,74 MiB. 4 GiB propuestos; falta medir prestamos y eventos juntos y reservar margen para el SO. |
-| `gestion` | aplicacion | 10.0.11.20 | t3.medium | `biblioteca-admin`, Kafka UI, simulador, runner `aws`; Prometheus/Grafana opcionales | Kafka UI midio 372,4 MiB; faltan admin, simulador, runner y margen de compilacion. 4 GiB propuestos. |
-| `mq-1` | datos-a | 10.0.21.11 | t3.small | controller 1, broker 4 y `rabbit1` | Controller 228,5 + broker 520,3 = 748,8 MiB; sumar RabbitMQ y SO antes de confirmar los 2 GiB. |
-| `mq-2` | datos-b | 10.0.22.12 | t3.small | controller 2, broker 5 y `rabbit2` | Controller 171,6 + broker 485,3 = 656,9 MiB; falta RabbitMQ y SO. 2 GiB propuestos. |
-| `mq-3` | datos-a | 10.0.21.13 | t3.small | controller 3 y broker 6 | 174,1 + 486,2 = 660,3 MiB medidos; 2 GiB dejan margen para SO y picos. |
-| `datos` | datos-a | 10.0.21.30 | t3.small | Postgres 18 | 2 GiB propuestos; medir Postgres con los prestamos y la auditoria antes de confirmarlo. |
+| `servicios` | aplicacion | 10.0.11.10 | t3.medium | `biblioteca-libros`, `biblioteca-prestamos`, `biblioteca-eventos` | Libros 20,60 + prestamos 93,29 + eventos 65,39 = 179,28 MiB medidos. 4 GiB dejan margen para SO, picos y crecimiento; falta prueba de carga. |
+| `gestion` | aplicacion | 10.0.11.20 | t3.medium | `biblioteca-admin`, Kafka UI, simulador, runner `aws`; Prometheus/Grafana opcionales | Kafka UI 387,20 + admin 55,55 = 442,75 MiB; reservar margen para simulador, runner y compilacion. 4 GiB propuestos. |
+| `mq-1` | datos-a | 10.0.21.11 | t3.small | controller 1, broker 4 y `rabbit1` | Controller 270,60 + broker 600,90 + RabbitMQ 145,60 = 1017,10 MiB. 2 GiB dejan aproximadamente 1 GiB para SO y picos; verificar bajo carga. |
+| `mq-2` | datos-b | 10.0.22.12 | t3.small | controller 2, broker 5 y `rabbit2` | Controller 293,00 + broker 593,60 + RabbitMQ 151,80 = 1038,40 MiB. 2 GiB dejan margen para SO; verificar bajo carga. |
+| `mq-3` | datos-a | 10.0.21.13 | t3.small | controller 3 y broker 6 | 238,20 + 592,10 = 830,30 MiB medidos; 2 GiB dejan margen para SO y picos. |
+| `datos` | datos-a | 10.0.21.30 | t3.small | Postgres 18 | Postgres midio 52,33 MiB con los esquemas cargados. 2 GiB dejan margen para cache y conexiones; medir bajo carga. |
 
 | Grupo de reglas | Puerto | Origen | Para que |
 |---|---|---|---|
@@ -56,8 +56,8 @@ Region candidata: `northcentralus`. No se declara aprobada hasta crear y borrar 
 
 | Maquina | Subred | IP privada | Tamano | Lo que corre | Por que ese tamano |
 |---|---|---|---|---|---|
-| `gw-azure` | publica | 10.1.1.4; IP publica estatica y etiqueta pendientes E2 | B2ats_v2 | Caddy, web, gateway y NAT de la privada | Web 12,19 + gateway 43,58 = 55,77 MiB; sumar Caddy, SO y picos. Disponibilidad, RAM y cuota del SKU pendientes de verificar. |
-| `bff` | privada | 10.1.2.4, sin IP publica | B2als_v2 | BFF y runner `azure` | BFF midio 47,48 MiB. Reservar el pico de compilacion del runner y SO; SKU y cuota pendientes de verificar. |
+| `gw-azure` | publica | 10.1.1.4; IP publica estatica y etiqueta pendientes E2 | B2ats_v2 | Caddy, web, gateway y NAT de la privada | Web 11,91 + gateway 43,07 = 54,98 MiB; sumar Caddy, SO y picos. Disponibilidad, RAM y cuota del SKU pendientes de verificar. |
+| `bff` | privada | 10.1.2.4, sin IP publica | B2als_v2 | BFF y runner `azure` | BFF midio 44,78 MiB. Reservar el pico de compilacion del runner y SO; SKU y cuota pendientes de verificar. |
 
 | NSG | Puerto | Origen | Para que |
 |---|---|---|---|
@@ -68,11 +68,19 @@ Region candidata: `northcentralus`. No se declara aprobada hasta crear y borrar 
 
 ## Evidencias y pendientes
 
-Medicion parcial tomada con `docker stats --no-stream`: controller-1 228,5 MiB; controller-2 171,6 MiB;
-controller-3 174,1 MiB; broker-1 520,3 MiB; broker-2 485,3 MiB; broker-3 486,2 MiB; Kafka UI 372,4 MiB.
-No son una prueba de capacidad de las maquinas cloud ni incluyen todavia todo el sistema.
+Medicion completa local tomada con `docker stats --no-stream` tras cargar el simulador y arrancar los 17
+contenedores: web 11,91; gateway 43,07; bff 44,78; libros 20,60; prestamos 93,29; eventos 65,39;
+admin 55,55; Postgres 52,33; rabbit1 145,60; rabbit2 151,80; Kafka UI 387,20; broker-1 600,90;
+broker-2 593,60; broker-3 592,10; controller-1 270,60; controller-2 293,00; controller-3 238,20 MiB.
+Total aproximado: 3659,92 MiB de contenedores. Se excluye la CLI Azure temporal. No incluye toda la
+memoria del SO ni demuestra capacidad bajo carga.
 
-`deploy/aws/permisos.txt` registra ExpiredToken en STS: renovar la sesion Learner Lab y repetir el script.
-`deploy/azure/region.txt` registra la verificacion pendiente; no contiene resultados de cuota o presupuesto
-inventados. Debe haber al menos 4 vCPU regionales disponibles y ambos SKU sin restricciones. El titular
-debe definir y crear el presupuesto con alerta; aun no hay un monto ni destinatario confirmados.
+`deploy/aws/permisos.txt`: sesion renovada y plugin SSM 1.2.896.0; resumen real **14 OK y 0 FALLA**.
+Se verifico acceso SSM, tunel, DNS y ausencia de acceso por el puerto 22. El script termino y confirmo
+instancia terminada, Elastic IP liberada y VPC temporal borrada. El intento inicial ExpiredToken se
+conserva en las evidencias locales del informe, no como resultado final.
+
+`deploy/azure/region.txt`: pendiente porque el estudiante indico no tener cuenta Azure actualmente.
+La CLI oficial fue preparada en Docker, pero se cancelo el login sin una suscripcion. No se crearon
+recursos ni presupuesto. Debe haber al menos 4 vCPU regionales disponibles y ambos SKU sin restricciones.
+El titular debe definir y crear el presupuesto con alerta cuando disponga de la cuenta.
